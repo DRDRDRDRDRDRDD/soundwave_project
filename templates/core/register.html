@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}SoundWave — Регистрация{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <form id="registerForm" class="auth-form" method="post" novalidate>
+        {% csrf_token %}
+        <h1>Регистрация</h1>
+
+        <div class="form-group">
+            <label for="fullName">ФИО</label>
+            <input type="text" id="fullName" name="fio" required>
+            <span class="error" data-error="fullName"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+            <span class="error" data-error="email"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="login">Логин</label>
+            <input type="text" id="login" name="username" required>
+            <span class="error" data-error="login"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Пароль</label>
+            <div class="password-wrap">
+                <input type="password" id="password" name="password" required>
+                <button type="button" class="toggle-pass" data-target="password">👁</button>
+            </div>
+            <span class="error" data-error="password"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="confirmPassword">Повтор пароля</label>
+            <div class="password-wrap">
+                <input type="password" id="confirmPassword" name="confirmPassword" required>
+                <button type="button" class="toggle-pass" data-target="confirmPassword">👁</button>
+            </div>
+            <span class="error" data-error="confirmPassword"></span>
+        </div>
+
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+
+        <button type="submit" class="btn-primary">Зарегистрироваться</button>
+        <p class="form-footer">Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a></p>
+    </form>
+</div>
+{% endblock %}
