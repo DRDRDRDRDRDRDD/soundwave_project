@@ -69,7 +69,6 @@ function initPasswordToggles() {
 }
 
 /* ДЕЙСТВИЯ С ТРЕКАМИ */
-/* ДЕЙСТВИЯ С ТРЕКАМИ */
 function initTrackActions() {
     const playlist = document.getElementById('myPlaylist');
     // Ищем плеер на странице профиля тоже
@@ -80,10 +79,9 @@ function initTrackActions() {
         likeBtn.classList.toggle('active');
         
         const img = likeBtn.querySelector('img');
-        const trackId = likeBtn.dataset.id; // Берем ID трека из data-атрибута
+        const trackId = likeBtn.dataset.id;
         const isLiked = likeBtn.classList.contains('active');
 
-        // Меняем иконку
         if (img) {
             if (isLiked) {
                 img.src = img.src.replace('heart.svg', 'heart-red.svg');
@@ -92,12 +90,11 @@ function initTrackActions() {
             }
         }
 
-        // Отправляем AJAX запрос на сервер (нужно прописать в urls.py и views.py)
         if (trackId) {
             fetch(`/toggle-like/${trackId}/`, {
                 method: 'POST',
                 headers: {
-                    'X-CSRFToken': getCookie('csrftoken'), // Получаем CSRF токен
+                    'X-CSRFToken': getCookie('csrftoken'),
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ 'liked': isLiked })
@@ -105,6 +102,23 @@ function initTrackActions() {
             .then(response => response.json())
             .then(data => {
                 console.log("Лайк сохранен:", data);
+                
+                // Если мы находимся в профиле и убрали лайк — плавно удаляем блок трека со страницы
+                const profileLikesContainer = document.getElementById('profileLikes');
+                if (profileLikesContainer && !isLiked) {
+                    const trackElement = likeBtn.closest('.track');
+                    if (trackElement) {
+                        trackElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                        trackElement.style.opacity = '0';
+                        trackElement.style.transform = 'translateX(20px)';
+                        setTimeout(() => {
+                            trackElement.remove();
+                            if (profileLikesContainer.querySelectorAll('.track').length === 0) {
+                                profileLikesContainer.innerHTML = '<p style="color: var(--muted);">У вас пока нет любимых треков.</p>';
+                            }
+                        }, 300);
+                    }
+                }
             })
             .catch(error => console.error("Ошибка:", error));
         }

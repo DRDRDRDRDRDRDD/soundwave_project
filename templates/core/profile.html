@@ -1,36 +1,34 @@
 {% extends 'base.html' %}
 {% load static %}
-
-{% block title %}SoundWave — Мой Профиль{% endblock %}
+{% block title %}SoundWave — Профиль{% endblock %}
 
 {% block content %}
-<section class="section">
-    <h2>Мой профиль</h2>
-    <div class="profile-info" style="margin-bottom: 20px; color: var(--text);">
-        <p><strong>Пользователь:</strong> {{ user.username }}</p>
-        <p><strong>Email:</strong> {{ user.email }}</p>
-    </div>
+<div class="profile-container">
+    <h1>Личный кабинет</h1>
+    <p class="profile-username">Пользователь: <strong>{{ user.username }}</strong></p>
 
-    <h2>Любимые треки</h2>
-    <div class="track-list" id="profileLikes">
-        {% for item in liked_tracks %}
-        <div class="track" data-title="{{ item.track.title }}">
-            <img src="{% static 'images/images/' %}{{ item.track.cover }}" alt="{{ item.track.title }}">
-            <button class="play-btn" aria-label="Play">
-                <img src="{% static 'images/images/play.svg' %}" alt="">
-            </button>
-            <div class="track-info">
-                <span class="track-title">{{ item.track.title }}</span>
-                <span class="track-artist">{{ item.track.artist }}</span>
+    <section class="section" style="margin-top: 20px;">
+        <h2>Любимые треки</h2>
+        <div class="track-list" id="profileLikes">
+            {% for track in liked_tracks %}
+            <div class="track" data-id="{{ track.id }}" data-title="{{ track.title }}">
+                <img src="{% static 'images/images/' %}{{ track.cover }}" alt="{{ track.title }}">
+                <button class="play-btn" aria-label="Play">
+                    <img src="{% static 'images/images/play.svg' %}" alt="">
+                </button>
+                <div class="track-info">
+                    <span class="track-title">{{ track.title }}</span>
+                    <span class="track-artist">{{ track.artist }}</span>
+                </div>
+                <!-- Кнопка лайка активна, повторный клик снимает лайк и удаляет из списка -->
+                <button class="like-btn active" data-id="{{ track.id }}" aria-label="Нравится">
+                    <img src="{% static 'images/images/heart-red.svg' %}" alt="">
+                </button>
             </div>
-            <!-- Кнопка лайка уже активна (красная), т.к. трек в избранном -->
-            <button class="like-btn active" aria-label="Убрать из избранного" data-id="{{ item.track.id }}">
-                <img src="{% static 'images/images/heart-red.svg' %}" alt="">
-            </button>
+            {% empty %}
+            <p id="emptyMessage" style="color: var(--muted);">У вас пока нет любимых треков.</p>
+            {% endfor %}
         </div>
-        {% empty %}
-        <p style="color: var(--muted);">Вы пока не добавили ни одного трека в избранное.</p>
-        {% endfor %}
-    </div>
-</section>
+    </section>
+</div>
 {% endblock %}

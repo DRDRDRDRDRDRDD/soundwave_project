@@ -30,8 +30,10 @@
                     <span class="track-title">{{ track.title }}</span>
                     <span class="track-artist">{{ track.artist }}</span>
                 </div>
-                <button class="like-btn" aria-label="Нравится" data-id="{{ track.id }}">
-                    <img src="{% static 'images/images/heart.svg' %}" alt="">
+                <button class="like-btn {% if user in track.liked_by.all %}active{% endif %}" data-id="{{ track.id }}"
+                    aria-label="Нравится">
+                    <img src="{% static 'images/images/' %}{% if user in track.liked_by.all %}heart-red.svg{% else %}heart.svg{% endif %}"
+                        alt="">
                 </button>
                 <button class="remove-btn" aria-label="Удалить">
                     <img src="{% static 'images/images/delete.svg' %}" alt="">
