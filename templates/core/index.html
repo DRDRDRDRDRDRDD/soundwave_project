@@ -30,7 +30,7 @@
                     <span class="track-title">{{ track.title }}</span>
                     <span class="track-artist">{{ track.artist }}</span>
                 </div>
-                <button class="like-btn" aria-label="Нравится">
+                <button class="like-btn" aria-label="Нравится" data-id="{{ track.id }}">
                     <img src="{% static 'images/images/heart.svg' %}" alt="">
                 </button>
                 <button class="remove-btn" aria-label="Удалить">

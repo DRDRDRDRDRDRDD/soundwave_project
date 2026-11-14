@@ -1,18 +1,14 @@
+# apps/core/views.py (или где у вас лежат вьюхи)
 from django.shortcuts import render
-from apps.music.models import Album, Track
+from django.contrib.auth.decorators import login_required
+from music.models import LikedTrack
 
-def home(request):
-    recommendations = Album.objects.all()
-    top_albums = Album.objects.all()[:4] 
-    playlist = Track.objects.all()
+@login_required
+def profile(request):
+    # Достаем все лайкнутые треки текущего пользователя
+    liked_tracks = LikedTrack.objects.filter(user=request.user).select_related('track')
     
     context = {
-        'recommendations': recommendations,
-        'playlist': playlist,
-        'top_albums': top_albums,
+        'liked_tracks': liked_tracks,
     }
-    return render(request, 'core/index.html', context)
-
-def catalog(request):
-    albums = Album.objects.all()
-    return render(request, 'core/catalog.html', {'albums': albums})
+    return render(request, 'core/profile.html', context)

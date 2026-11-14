@@ -711,3 +711,8 @@ body {
         width: calc(100% - 220px); 
     }
 }
+
+.like-btn.active {
+    color: var(--danger); 
+    transform: scale(1.2); 
+}
