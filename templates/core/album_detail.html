@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}SoundWave — {{ album.title }}{% endblock %}
+
+{% block content %}
+<!-- Шапка альбома -->
+<div style="display: flex; gap: 30px; margin-bottom: 40px; align-items: flex-end;">
+    <img src="{% static 'images/images/' %}{{ album.cover }}" alt="{{ album.title }}" 
+         style="width: 200px; height: 200px; border-radius: 20px; object-fit: cover; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+    <div>
+        <p style="color: var(--text-muted); text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Альбом</p>
+        <h1 style="font-size: 48px; margin-bottom: 10px;">{{ album.title }}</h1>
+        <p style="font-size: 18px; color: var(--text-muted);">{{ album.artist }}</p>
+    </div>
+</div>
+
+<!-- Список треков -->
+<section class="section">
+    <h2>Треки</h2>
+    <div class="track-list">
+        {% for track in tracks %}
+        <div class="track" data-title="{{ track.title }}">
+            <button class="play-btn" aria-label="Play">
+                <img src="{% static 'images/images/play.svg' %}" alt="">
+            </button>
+            <div class="track-info">
+                <span class="track-title">{{ track.title }}</span>
+                <span class="track-artist">{{ track.artist }}</span>
+            </div>
+            <!-- Кнопка лайка -->
+            <button class="like-btn {% if user in track.liked_by.all %}active{% endif %}" data-id="{{ track.id }}">
+                <img src="{% static 'images/images/' %}{% if user in track.liked_by.all %}heart-red.svg{% else %}heart.svg{% endif %}" alt="">
+            </button>
+        </div>
+        {% empty %}
+        <p style="color: var(--text-muted);">В этом альбоме пока нет треков.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

@@ -4,7 +4,6 @@
 
 {% block content %}
 <div class="profile-container">
-    <h1>Личный кабинет</h1>
     <p class="profile-username">Пользователь: <strong>{{ user.username }}</strong></p>
 
     <section class="section" style="margin-top: 20px;">
@@ -20,7 +19,6 @@
                     <span class="track-title">{{ track.title }}</span>
                     <span class="track-artist">{{ track.artist }}</span>
                 </div>
-                <!-- Кнопка лайка активна, повторный клик снимает лайк и удаляет из списка -->
                 <button class="like-btn active" data-id="{{ track.id }}" aria-label="Нравится">
                     <img src="{% static 'images/images/heart-red.svg' %}" alt="">
                 </button>

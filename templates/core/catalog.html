@@ -7,7 +7,9 @@
 <div class="catalog-grid" id="catalogGrid">
     {% for album in albums %}
     <article class="album-card" data-title="{{ album.title }}">
-        <img src="{% static 'images/images/' %}{{ album.cover }}" alt="{{ album.title }}">
+        <a href="{% url 'album_detail' album.id %}">
+            <img src="{% static 'images/images/' %}{{ album.cover }}" alt="{{ album.title }}">
+        </a>
         <h3>{{ album.title }}</h3>
         <p>{{ album.artist }}</p>
     </article>

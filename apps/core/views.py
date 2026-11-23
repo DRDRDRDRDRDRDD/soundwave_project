@@ -4,6 +4,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 import json
+from django.shortcuts import render, get_object_or_404
 
 def home(request):
     recommendations = Album.objects.all()
@@ -44,3 +45,8 @@ def toggle_like(request, track_id):
             
         return JsonResponse({'status': 'ok', 'liked': liked})
     return JsonResponse({'status': 'error'}, status=400)
+
+def album_detail(request, album_id):
+    album = get_object_or_404(Album, id=album_id)
+    tracks = Track.objects.filter(album=album)
+    return render(request, 'core/album_detail.html', {'album': album, 'tracks': tracks})
