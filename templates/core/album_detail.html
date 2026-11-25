@@ -3,23 +3,26 @@
 {% block title %}SoundWave — {{ album.title }}{% endblock %}
 
 {% block content %}
-<!-- Шапка альбома -->
-<div style="display: flex; gap: 30px; margin-bottom: 40px; align-items: flex-end;">
-    <img src="{% static 'images/images/' %}{{ album.cover }}" alt="{{ album.title }}" 
-         style="width: 200px; height: 200px; border-radius: 20px; object-fit: cover; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-    <div>
-        <p style="color: var(--text-muted); text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Альбом</p>
+<a href="{% url 'catalog' %}" class="back-btn">
+    <img src="{% static 'images/images/arrow.svg' %}" alt="Назад" style="width: 20px;">
+</a>
+
+<div class="album-header">
+    <img src="{% static 'images/images/' %}{{ album.cover }}" alt="{{ album.title }}" class="album-cover">
+    <div class="album-info">
         <h1 style="font-size: 48px; margin-bottom: 10px;">{{ album.title }}</h1>
         <p style="font-size: 18px; color: var(--text-muted);">{{ album.artist }}</p>
     </div>
 </div>
 
-<!-- Список треков -->
 <section class="section">
     <h2>Треки</h2>
     <div class="track-list">
         {% for track in tracks %}
-        <div class="track" data-title="{{ track.title }}">
+        <div class="track" data-title="{{ track.title }}" data-artist="{{ track.artist }}"
+            data-cover="{% static 'images/images/' %}{{ album.cover }}"
+            data-audio-url="{{ track.audio_file.url|default:'' }}">
+
             <button class="play-btn" aria-label="Play">
                 <img src="{% static 'images/images/play.svg' %}" alt="">
             </button>
@@ -27,9 +30,9 @@
                 <span class="track-title">{{ track.title }}</span>
                 <span class="track-artist">{{ track.artist }}</span>
             </div>
-            <!-- Кнопка лайка -->
             <button class="like-btn {% if user in track.liked_by.all %}active{% endif %}" data-id="{{ track.id }}">
-                <img src="{% static 'images/images/' %}{% if user in track.liked_by.all %}heart-red.svg{% else %}heart.svg{% endif %}" alt="">
+                <img src="{% static 'images/images/' %}{% if user in track.liked_by.all %}heart-red.svg{% else %}heart.svg{% endif %}"
+                    alt="">
             </button>
         </div>
         {% empty %}
@@ -37,4 +40,65 @@
         {% endfor %}
     </div>
 </section>
+
+<style>
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-muted);
+        margin-bottom: 20px;
+        font-size: 14px;
+        transition: color 0.2s;
+    }
+
+    .back-btn:hover {
+        color: var(--text-main);
+    }
+
+    .album-header {
+        display: flex;
+        gap: 30px;
+        margin-bottom: 40px;
+        align-items: flex-end;
+    }
+
+    .album-cover {
+        width: 200px;
+        height: 200px;
+        border-radius: 20px;
+        object-fit: cover;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    @media (max-width: 425px) {
+        .album-header {
+            flex-direction: column;
+            gap: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .album-cover {
+            width: 140px;
+            height: 140px;
+            border-radius: 12px;
+        }
+
+        .album-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .album-info h1 {
+            font-size: 28px !important;
+            margin-bottom: 5px !important;
+        }
+
+        .album-info p {
+            font-size: 14px !important;
+        }
+    }
+</style>
 {% endblock %}

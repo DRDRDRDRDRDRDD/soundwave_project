@@ -2,9 +2,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initBurger();
     initSearch();
     initPasswordToggles();
-
-    initTrackActions();
-    initPlayer();
+    initTrackActions(); // Лайки и удаление
+    initPlayerControls(); // Единый плеер
+    initTrackClicks(); // Клики по трекам
 });
 
 /* БУРГЕР-МЕНЮ */
@@ -68,26 +68,19 @@ function initPasswordToggles() {
     });
 }
 
-/* ДЕЙСТВИЯ С ТРЕКАМИ */
+/* ДЕЙСТВИЯ С ТРЕКАМИ (Лайки/Удаление) */
 function initTrackActions() {
     const playlist = document.getElementById('myPlaylist');
-    // Ищем плеер на странице профиля тоже
     const profileLikes = document.getElementById('profileLikes'); 
     
-    // Функция-обработчик для лайков
     const handleLikeClick = (likeBtn) => {
         likeBtn.classList.toggle('active');
-        
         const img = likeBtn.querySelector('img');
         const trackId = likeBtn.dataset.id;
         const isLiked = likeBtn.classList.contains('active');
 
         if (img) {
-            if (isLiked) {
-                img.src = img.src.replace('heart.svg', 'heart-red.svg');
-            } else {
-                img.src = img.src.replace('heart-red.svg', 'heart.svg');
-            }
+            img.src = isLiked ? img.src.replace('heart.svg', 'heart-red.svg') : img.src.replace('heart-red.svg', 'heart.svg');
         }
 
         if (trackId) {
@@ -101,9 +94,6 @@ function initTrackActions() {
             })
             .then(response => response.json())
             .then(data => {
-                console.log("Лайк сохранен:", data);
-                
-                // Если мы находимся в профиле и убрали лайк — плавно удаляем блок трека со страницы
                 const profileLikesContainer = document.getElementById('profileLikes');
                 if (profileLikesContainer && !isLiked) {
                     const trackElement = likeBtn.closest('.track');
@@ -124,7 +114,6 @@ function initTrackActions() {
         }
     };
 
-    // Обработчик для плейлиста на главной
     if (playlist) {
         playlist.addEventListener('click', (e) => {
             const removeBtn = e.target.closest('.remove-btn');
@@ -141,22 +130,19 @@ function initTrackActions() {
                 }
                 return;
             }
-
             const likeBtn = e.target.closest('.like-btn');
             if (likeBtn) handleLikeClick(likeBtn);
         });
     }
 
-    // Обработчик для страницы профиля (если мы там)
     if (profileLikes) {
         profileLikes.addEventListener('click', (e) => {
             const likeBtn = e.target.closest('.like-btn');
-            if (likeBtn) handleLikeClick(likeBtn); // Тут тоже можно удалять лайк
+            if (likeBtn) handleLikeClick(likeBtn);
         });
     }
 }
 
-// Вспомогательная функция для получения CSRF токена (нужна для Django)
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -173,58 +159,114 @@ function getCookie(name) {
 }
 
 function checkEmptyPlaylist(playlist) {
-    const tracks = playlist.querySelectorAll('.track');
-    if (tracks.length === 0) {
+    if (playlist.querySelectorAll('.track').length === 0) {
         playlist.innerHTML = '<p style="color: var(--muted); padding: 10px;">Плейлист пока пуст.</p>';
     }
 }
 
-/* БАЗОВАЯ ЛОГИКА ПЛЕЕРА */
-function initPlayer() {
+/* --- УПРАВЛЕНИЕ ПЛЕЕРОМ (Единая функция) --- */
+function initPlayerControls() {
     const playPauseBtn = document.getElementById('playPauseBtn');
     const playPauseIcon = document.getElementById('playPauseIcon');
+    const audio = document.getElementById('audioElement');
+    const progressBar = document.getElementById('progressBar');
+    const timeLabel = document.getElementById('timeLabel');
 
-    if (!playPauseBtn || !playPauseIcon) return;
+    if (!playPauseBtn || !audio) return;
 
-    let isPlaying = false;
-
+    // Кнопка Play/Pause
     playPauseBtn.addEventListener('click', () => {
-        isPlaying = !isPlaying;
-
-        if (isPlaying) {
-            playPauseIcon.src = playPauseIcon.src.replace('pause.svg', 'play.svg');
+        if (audio.paused) {
+            if (audio.src) audio.play();
         } else {
-            playPauseIcon.src = playPauseIcon.src.replace('play.svg', 'pause.svg');
+            audio.pause();
         }
     });
 
-    const progressBar = document.getElementById('progressBar');
+    // Смена иконки
+    audio.addEventListener('play', () => {
+        playPauseIcon.src = "/static/images/images/pause.svg";
+    });
+
+    audio.addEventListener('pause', () => {
+        playPauseIcon.src = "/static/images/images/play.svg";
+    });
+
+    // Прогресс и время
+    audio.addEventListener('timeupdate', () => {
+        if (audio.duration) {
+            progressBar.value = (audio.currentTime / audio.duration) * 100;
+            
+            const curMin = Math.floor(audio.currentTime / 60);
+            const curSec = Math.floor(audio.currentTime % 60);
+            const durMin = Math.floor(audio.duration / 60);
+            const durSec = Math.floor(audio.duration % 60);
+            
+            timeLabel.textContent = `${curMin}:${curSec < 10 ? '0' : ''}${curSec} / ${durMin}:${durSec < 10 ? '0' : ''}${durSec}`;
+        }
+    });
+
+    // Перемотка
     if (progressBar) {
         progressBar.addEventListener('input', () => {
-            const timeLabel = document.getElementById('timeLabel');
-            if (timeLabel) {
-                const totalSeconds = 225;
-                const currentSeconds = Math.floor((progressBar.value / 100) * totalSeconds);
-                const minutes = Math.floor(currentSeconds / 60);
-                const seconds = currentSeconds % 60;
-                timeLabel.textContent = `0:${seconds < 10 ? '0' : ''}${seconds} / 3:45`;
+            if (audio.duration) {
+                audio.currentTime = (progressBar.value / 100) * audio.duration;
             }
         });
     }
+
+    // Кнопки Next/Prev
+    document.getElementById('nextBtn')?.addEventListener('click', () => {
+        const tracks = Array.from(document.querySelectorAll('.track'));
+        let currentIndex = tracks.findIndex(t => t.dataset.audioUrl === audio.src.replace(window.location.origin, ''));
+        if (currentIndex !== -1 && currentIndex < tracks.length - 1) {
+            tracks[currentIndex + 1].click();
+        } else if (tracks.length > 0) {
+            tracks[0].click();
+        }
+    });
+
+    document.getElementById('prevBtn')?.addEventListener('click', () => {
+        const tracks = Array.from(document.querySelectorAll('.track'));
+        let currentIndex = tracks.findIndex(t => t.dataset.audioUrl === audio.src.replace(window.location.origin, ''));
+        if (currentIndex > 0) {
+            tracks[currentIndex - 1].click();
+        }
+    });
 }
 
-/* УТИЛИТЫ ВАЛИДАЦИИ */
-function setError(input, message) {
-    const span = document.querySelector(`.error[data-error="${input.id}"]`);
-    if (span) span.textContent = message || '';
-    input.classList.toggle('invalid', Boolean(message));
-}
+/* --- КЛИКИ ПО ТРЕКАМ --- */
+function initTrackClicks() {
+    const tracks = document.querySelectorAll('.track');
+    const audio = document.getElementById('audioElement');
+    const playerTitle = document.getElementById('playerTitle');
+    const playerArtist = document.getElementById('playerArtist');
+    const playerCover = document.getElementById('playerCover');
 
-function clearErrors(form) {
-    form.querySelectorAll('.error').forEach(el => (el.textContent = ''));
-    form.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
-}
+    if (!audio) return;
 
-function isEmail(value) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    tracks.forEach(track => {
+        track.addEventListener('click', (e) => {
+            if (e.target.closest('.like-btn') || e.target.closest('.remove-btn')) return;
+
+            const audioUrl = track.dataset.audioUrl;
+            const title = track.dataset.title;
+            const artist = track.dataset.artist; 
+            const cover = track.dataset.cover;
+            
+            if (!audioUrl) {
+                alert("У этого трека нет аудиофайла. Загрузите его в админке.");
+                return;
+            }
+
+            audio.src = audioUrl;
+            audio.play();
+            
+            playerTitle.textContent = title;
+            // Если артист не передан, пишем "Неизвестный исполнитель"
+            playerArtist.textContent = artist ? artist : "Неизвестный исполнитель"; 
+            
+            if (cover) playerCover.src = cover;
+        });
+    });
 }

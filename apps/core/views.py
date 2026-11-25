@@ -23,7 +23,6 @@ def catalog(request):
     return render(request, 'core/catalog.html', {'albums': albums})
 @login_required(login_url='login')
 def profile_view(request):
-    # Получаем треки, которые лайкнул текущий авторизованный пользователь
     liked_tracks = request.user.liked_tracks.all()
     context = {
         'liked_tracks': liked_tracks,
